@@ -1,0 +1,2 @@
+rails db:drop && spring stop && cd ../ && rm -rf BootstrapTest && rails new BootstrapTest -d mysql -T -m RoR_SwanTemplate/main.rb && cd BootstrapTest && rails g scaffold book title author price:integer && rails db:migrate && rails s
+rails db:drop && spring stop && cd ../ && rm -rf MaterialTest && rails new MaterialTest -d mysql -T -m RoR_SwanTemplate/main.rb && cd MaterialTest && rails g scaffold book title author price:integer && rails db:migrate && rails s -p 3001

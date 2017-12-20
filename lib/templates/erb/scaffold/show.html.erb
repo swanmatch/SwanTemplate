@@ -1,0 +1,6 @@
+<%%= render "form", only_show: true %>
+
+<div class="text-center">
+  <%%= link_to '戻る', <%= index_helper %>_path, class: 'btn btn-default' %> |
+  <%%= link_to '編集', edit_<%= singular_table_name %>_path(@<%= singular_table_name %>), class: 'btn btn-primary' %>
+</div>
