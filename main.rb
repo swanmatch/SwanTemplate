@@ -25,32 +25,6 @@ def multiple_choice(question, choices)
   values[answer]
 end
 
-def search_attrs(attributes)
-  attrs_with_type = attributes.group_by(&:type)
-  {
-    text: [
-        attrs_with_type[:string],
-        attrs_with_type[:text]
-      ].flatten.compact.map(&:name),
-    date:
-      (attrs_with_type[:date] || []).map{ |attr|
-        ["#{attr.name}_from", "#{attr.name}_to"]
-      }.flatten,
-    date_time: [
-        attrs_with_type[:date_time],
-        attrs_with_type[:time]
-      ].flatten.compact.map{ |attr|
-        ["#{attr.name}_from", "#{attr.name}_to"]
-      }.flatten,
-    integer:
-      (attrs_with_type[:integer] || []).map{ |attr|
-        ["#{attr.name}_from", "#{attr.name}_to"]
-      }.flatten,
-    boolean:
-      (attrs_with_type[:boolean] || []).flatten.map(&:name)
-  }
-end
-
 @design = multiple_choice("Please Choise use design frame work", [:bootstrap, :material])
 
 
@@ -157,9 +131,9 @@ config.active_record.default_timezone = :local
     config.autoload_paths += %W(#{config.root}/lib)
 
     config.generators do |g|
-      g.helper false
       g.assets false
       g.test_framework false
+      g.helper :hook_scaffold
     end
     config.generators.template_engine = :erb
     # Don't generate system test files.
@@ -178,6 +152,12 @@ after_bundle do
 
   run "wget https://raw.github.com/svenfuchs/rails-i18n/master/rails/locale/ja.yml -P config/locales/"
 
+  generate "generator rails/hook_scaffold"
+  gsub_file "./lib/generators/rails/hook_scaffold/hook_scaffold_generator.rb", "source_root File.expand_path('../templates', __FILE__)", <<'HOOK'
+def main
+    insert_into_file "app/views/layouts/application.html.erb", "<li><%= link_to #{class_name.singularize}.model_name.human, #{plural_table_name}_path %></li>", before: "</ul>\n<ul class=\"nav navbar-nav navbar-right\">"
+  end
+HOOK
   rake "app:templates:copy"
   generate "simple_form:install --bootstrap -f"
   generate 'kaminari:config'
@@ -433,26 +413,7 @@ ACTIVERECORD
 <!-- Collect the nav links, forms, and other content for toggling -->
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 <ul class="nav navbar-nav">
-<li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
-<li><a href="#">Link</a></li>
-<li class="dropdown">
-<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-<ul class="dropdown-menu">
-<li><a href="#">Action</a></li>
-<li><a href="#">Another action</a></li>
-<li><a href="#">Something else here</a></li>
-<li role="separator" class="divider"></li>
-<li><a href="#">Separated link</a></li>
-<li role="separator" class="divider"></li>
-<li><a href="#">One more separated link</a></li>
 </ul>
-</li>
-</ul>
-<form class="navbar-form navbar-left">
-<div class="form-group">
-<input class="form-control col-md-8" placeholder="Search" type="text">
-</div>
-</form>
 <ul class="nav navbar-nav navbar-right">
 <li><a href="#">Link</a></li>
 <li class="dropdown">
@@ -516,7 +477,7 @@ INDEX
   prepend_file "lib/templates/rails/scaffold_controller/controller.rb", "# coding: utf-8\n"
   append_file "lib/templates/rails/scaffold_controller/controller.rb", <<BEFORE_ACTIONS, after: "ApplicationController\n"
 <%- attributes.select(&:reference?).each do |attribute| -%>
-  before_action :set_<%= attribute.name %>_options, only: [:index, :show, :edit, :new]
+  before_action :set_<%= attribute.name %>_options, only: [:index, :show, :edit, :new, :update, :create]
 <%- end -%>
 BEFORE_ACTIONS
   append_file "lib/templates/rails/scaffold_controller/controller.rb", <<'OPTIONS', after: "private\n"
