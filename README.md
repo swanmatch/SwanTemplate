@@ -16,6 +16,9 @@ rails g swaffold book title author:references genre:references overview:text
 rails db:migrate
 ```
 
+![フシギダネ](https://raw.githubusercontent.com/swanmatch/images/master/SwanTemplate/bootstrap.png)
+
+
 ## Additionnal Functions
 
 ### Bootstrap or MaterialDesign
@@ -40,7 +43,10 @@ example this image
 
 ![フシギダネ](http://pokesoku.co/wp-content/uploads/2016/08/th3_img_0.jpg)
 
+
 genarated page is this.
+
+![lavish](https://raw.githubusercontent.com/swanmatch/images/master/SwanTemplate/fushigidane.png)
 
 
 ### Search sub class and form in index
@@ -54,6 +60,20 @@ And search form append in top of index pages.
 You can search string(verchar) and text with LIKE,
 integer, date with min..max,
 references with IN by select2 multiple select
+
+
+### Select2
+
+references columns are auto apply select2.
+
+you can like search relation sip table in edit page.
+
+index pages are searchable by multiple select.
+
+
+### Bootstrap Datepicker
+
+Date type columns can input by bootstrap datepicker.
 
 
 ### Kaminari pagenation
@@ -83,18 +103,13 @@ only show active columns.
 and references select box too.
 
 
-### Select2
+### Lock version
 
-references columns are auto apply select2.
+migration auto add "lock_version" column.
 
-you can like search relation sip table in edit page.
+they hidden in edit pages.
 
-index pages are searchable by multiple select.
-
-
-### Bootstrap Datepicker
-
-Date type columns can input by bootstrap datepicker.
+added strong parametars.
 
 
 ### ERD and annnotate
@@ -104,16 +119,36 @@ auto create Entity Relationsip Diagram pdf.
 
 pleace install graphviz.
 
-how to install graphviz.
+graphviz install guide.
 
 https://voormedia.github.io/rails-erd/install.html
 
+scheme infomation output to model as comment.
 
-### Lock version
+example
+```ruby
+# coding: utf-8
+# == Schema Information
+#
+# Table name: books
+#
+#  id           :integer          not null, primary key
+#  title        :string(255)
+#  author_id    :integer
+#  genre_id     :integer
+#  overview     :text(65535)
+#  lock_version :integer          default(0), not null
+#  created_by   :integer
+#  updated_by   :integer
+#  deleted_by   :integer
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  deleted_at   :datetime
+```
 
-migration auto add "lock_version" column.
+### i18n genarator
 
-they are hidden in edit pages.
+Auto trancate and create i18n.yml after migration.
 
 
 ## Suppurts
