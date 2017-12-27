@@ -30,7 +30,7 @@ end
 
 ### Gem ###
 
-append_file 'Gemfile', <<-GEMFILE
+append_file './Gemfile', <<GEMFILE
 # コンソールをまともにする
 gem 'pry-rails'
 gem 'pry-doc'
@@ -98,7 +98,7 @@ group :development, :test do
 end
 GEMFILE
 
-gsub_file "Gemfile", "# gem 'therubyracer'", "gem 'therubyracer'"
+gsub_file "./Gemfile", "# gem 'therubyracer'", "gem 'therubyracer'"
 
 
 ### Application Settings ###
@@ -106,13 +106,11 @@ gsub_file "Gemfile", "# gem 'therubyracer'", "gem 'therubyracer'"
 copy_file "./lib/custom_logger.rb"
 copy_file "./lib/log4r.rb"
 
-add_require = <<ADD_REQUIRE
+append_file './config/application.rb', <<ADD_REQUIRE, after: "Bundler.require(*Rails.groups)\n"
 
 require File.expand_path("../../lib/log4r.rb", __FILE__)
 include Log4r
 ADD_REQUIRE
-
-append_file 'config/application.rb', add_require, after: "Bundler.require(*Rails.groups)\n"
 
 application <<'APP'
 config.active_record.default_timezone = :local
@@ -133,35 +131,43 @@ config.active_record.default_timezone = :local
     config.generators do |g|
       g.assets false
       g.test_framework false
-      g.helper :hook_scaffold
+      g.helper false
     end
     config.generators.template_engine = :erb
     # Don't generate system test files.
     config.generators.system_tests = nil
 APP
 
-append_file "config/database.yml", " admin", after: "password:"
-gsub_file "config/database.yml", "localhost", "127.0.0.1"
-gsub_file "config/database.yml", "_production", ""
+append_file "./config/database.yml", " admin", after: "password:"
+gsub_file "./config/database.yml", "localhost", "127.0.0.1"
+gsub_file "./config/database.yml", "_production", ""
 
 
 after_bundle do
   ### Make Files ###
 
-  run 'mv app/assets/stylesheets/application.css app/assets/stylesheets/application.scss'
+#  run 'mv app/assets/stylesheets/application.css app/assets/stylesheets/application.scss'
+  copy_file './app/assets/stylesheets/application.css', './app/assets/stylesheets/application.scss'
+  remove_file './app/assets/stylesheets/application.css'
 
   run "wget https://raw.github.com/svenfuchs/rails-i18n/master/rails/locale/ja.yml -P config/locales/"
 
-  generate "generator rails/hook_scaffold"
-  gsub_file "./lib/generators/rails/hook_scaffold/hook_scaffold_generator.rb", "source_root File.expand_path('../templates', __FILE__)", <<'HOOK'
-def main
-    insert_into_file "app/views/layouts/application.html.erb", "<li><%= link_to #{class_name.singularize}.model_name.human, #{plural_table_name}_path %></li>", before: "</ul>\n<ul class=\"nav navbar-nav navbar-right\">"
-  end
-HOOK
   rake "app:templates:copy"
   generate "simple_form:install --bootstrap -f"
   generate 'kaminari:config'
   generate 'kaminari:views bootstrap3'
+  generate 'erd:install'
+  generate 'annotate:install'
+
+  generate "generator swaffold"
+  prepend_file "./lib/generators/swaffold/swaffold_generator.rb", "require 'rails/generators/rails/scaffold/scaffold_generator'\n"
+  gsub_file "./lib/generators/swaffold/swaffold_generator.rb", "NamedBase", "ScaffoldGenerator"
+   gsub_file "./lib/generators/swaffold/swaffold_generator.rb", "source_root File.expand_path('../templates', __FILE__)", <<'HOOK'
+def main
+    insert_into_file "app/views/layouts/application.html.erb", "<li><%= link_to #{class_name.singularize}.model_name.human, #{plural_table_name}_path %></li>\n", after: "<ul class=\"nav navbar-nav\">\n"
+  end
+#  hook_for :scaffold
+HOOK
 
   generate "active_record:session_migration"
   session_migration_file = Dir.glob("db/migrate/*_add_sessions_table.rb").first
@@ -178,7 +184,7 @@ HOOK
 
   case @design
   when :bootstrap
-    gsub_file "app/assets/javascripts/application.js", "//= require_tree .", <<JS
+    gsub_file "./app/assets/javascripts/application.js", "//= require_tree .", <<JS
 // require_tree .
 //= require jquery
 // require jquery_nested_form
@@ -191,6 +197,9 @@ HOOK
 //= require bootstrap-datepicker/locales/bootstrap-datepicker.ja
 // require bootstrap-timepicker
 
+$(document).on("turbolinks:before-cache", function() {
+    $('.select2-input').select2('destroy');
+});
 $(document).on('turbolinks:load', function () {
   $('.select2').select2({
 //    theme: "bootstrap"
@@ -206,16 +215,16 @@ $(document).on('turbolinks:load', function () {
 });
 JS
 
-    gsub_file "app/assets/stylesheets/application.scss", " *= require_tree .", " * require_tree ."
+    gsub_file "./app/assets/stylesheets/application.scss", " *= require_tree .", " * require_tree ."
 
-    append_file "app/assets/stylesheets/application.scss", <<CSS, after: "require_self\n"
+    append_file "./app/assets/stylesheets/application.scss", <<CSS, after: "require_self\n"
  *= require select2
  *= require select2-bootstrap
  *= require bootstrap-datepicker
  * require bootstrap-timepicker
 CSS
 
-    append_file "app/assets/stylesheets/application.scss", <<CSS
+    append_file "./app/assets/stylesheets/application.scss", <<CSS
 
 @import "_custom_variables.scss";
 @import "bootstrap-sprockets";
@@ -249,13 +258,13 @@ div.datepicker-days > table.table-condensed > tbody > tr > td.day:last-child {
 }
 CSS
 
-    create_file "app/assets/stylesheets/_custom_variables.scss", "/* Go to http://www.lavishbootstrap.com */"
+    create_file "./app/assets/stylesheets/_custom_variables.scss", "/* Go to http://www.lavishbootstrap.com */"
 
   when :material
-    directory "app/assets/stylesheets/material"
-    directory "app/assets/javascripts/material"
+    directory "./app/assets/stylesheets/material"
+    directory "./app/assets/javascripts/material"
 
-    gsub_file "app/assets/javascripts/application.js", "//= require_tree .", <<JS
+    gsub_file "./app/assets/javascripts/application.js", "//= require_tree .", <<JS
 // require_tree .
 //= require jquery
 // require jquery_nested_form
@@ -270,6 +279,9 @@ CSS
 //= require bootstrap-datepicker/locales/bootstrap-datepicker.ja
 // require bootstrap-timepicker
 
+$(document).on("turbolinks:before-cache", function() {
+    $('.select2-input').select2('destroy');
+});
 $(document).on('turbolinks:load', function () {
   // material design initialize
   $('.select2').parents('.form-group').removeClass('label-floating');
@@ -288,9 +300,9 @@ $(document).on('turbolinks:load', function () {
 });
 JS
 
-    gsub_file "app/assets/stylesheets/application.scss", " *= require_tree .", " * require_tree ."
+    gsub_file "./app/assets/stylesheets/application.scss", " *= require_tree .", " * require_tree ."
 
-    append_file "app/assets/stylesheets/application.scss", <<CSS, after: "require_self\n"
+    append_file "./app/assets/stylesheets/application.scss", <<CSS, after: "require_self\n"
  *= require material/bootstrap-material-design
  *= require material/ripples
  *= require select2
@@ -298,7 +310,7 @@ JS
  *= require bootstrap-datepicker
  * require bootstrap-timepicker
 CSS
-    append_file "app/assets/stylesheets/application.scss", <<CSS
+    append_file "./app/assets/stylesheets/application.scss", <<CSS
 
 @import "bootstrap-sprockets";
 @import "bootstrap";
@@ -338,16 +350,12 @@ CSS
 
   ### Models ###
 
-  append_file "app/models/application_record.rb", <<'ACTIVERECORD', after: "self.abstract_class = true\n"
-
-#  include CustomValidaters
+  append_file "./app/models/application_record.rb", <<ACTIVERECORD, after: "self.abstract_class = true\n"
 
   scope :deleted, -> { where.not(deleted_at: nil)}
   scope :active, -> { where(deleted_at: nil)}
   scope :column_symbols, -> { column_names.map(&:to_sym) }
 #  records_with_operator_on :create, :update, :destroy
-#  belongs_to :creater, class_name: "MUser", foreign_key: :created_by
-#  belongs_to :updater, class_name: "MUser", foreign_key: :updated_by
 #  before_save -> { self.deleted_by = nil if self.deleted_at.blank? }
 
   # 論理削除
@@ -366,7 +374,7 @@ CSS
   end
 
   def to_s
-    "#{self.try(:name) || self.id}"
+    "\#{self.try(:name) || self.id}"
   end
 ACTIVERECORD
 
@@ -375,7 +383,7 @@ ACTIVERECORD
 
   ### Views ###
 
-  create_file "app/views/layouts/application.html.erb", <<LAYOUT, force: true
+  create_file "./app/views/layouts/application.html.erb", <<LAYOUT, force: true
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -407,7 +415,7 @@ ACTIVERECORD
 <span class="icon-bar"></span>
 </button>
 <a class="navbar-brand" href="#">#{@app_name.camelize}</a>
-<%#= link_to "#{@app_name.camelize}", route_path, class: "navbar-brand" %>
+<%#= link_to "#{@app_name.camelize}", root_path, class: "navbar-brand" %>
 </div>
 
 <!-- Collect the nav links, forms, and other content for toggling -->
@@ -457,30 +465,32 @@ LAYOUT
 
   ### Scaffold Templates ###
 
-  directory "lib/templates/erb/scaffold", force: true
-  append_file "lib/templates/erb/scaffold/_form.html.erb", ', html: { class: "form-horizontal" }', after: "url: url" if @design == :bootstrap
-  append_file "lib/templates/erb/scaffold/index.html.erb", ', html: { class: "form-horizontal" }', after: "method: :get" if @design == :bootstrap
-  directory "lib/templates/migration", force: true
-  directory "lib/templates/active_record", force: true
-  directory "app/inputs", force: true
+  directory "./lib/templates/erb/scaffold", force: true
+  append_file "./lib/templates/erb/scaffold/_form.html.erb", ', html: { class: "form-horizontal" }', after: "url: url" if @design == :bootstrap
+  append_file "./lib/templates/erb/scaffold/index.html.erb", ', html: { class: "form-horizontal" }', after: "method: :get" if @design == :bootstrap
+  directory "./lib/templates/migration", force: true
+  directory "./lib/templates/active_record", force: true
+  directory "./app/inputs", force: true
   if @design == :bootstrap
-    gsub_file "app/inputs/custom_date_input.rb", "btn", "addon"
-    gsub_file "app/inputs/date_range_input.rb", "btn", "addon"
-    gsub_file "app/inputs/int_range_input.rb", "btn", "addon"
+    gsub_file "./app/inputs/custom_date_input.rb", "btn", "addon"
+    gsub_file "./app/inputs/date_range_input.rb", "btn", "addon"
+    gsub_file "./app/inputs/int_range_input.rb", "btn", "addon"
   end
   gsub_file "lib/templates/rails/scaffold_controller/controller.rb", "@<%= plural_table_name %> = <%= orm_class.all(class_name) %>\n", <<INDEX
 @search_<%= singular_table_name %> = <%= class_name %>::Search.new(search_params)
     @<%= plural_table_name %> = @search_<%= singular_table_name %>.search(params[:page])
 INDEX
-  gsub_file "lib/templates/rails/scaffold_controller/controller.rb", '<%= orm_class.find(class_name, "params[:id]") %>', '<%= class_name %>.active.find(params[:id])'
-  gsub_file "lib/templates/rails/scaffold_controller/controller.rb", '<%= orm_instance.destroy %>', '<%= singular_table_name %>.logical_delete!'
-  prepend_file "lib/templates/rails/scaffold_controller/controller.rb", "# coding: utf-8\n"
-  append_file "lib/templates/rails/scaffold_controller/controller.rb", <<BEFORE_ACTIONS, after: "ApplicationController\n"
+  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb", '<%= orm_class.find(class_name, "params[:id]") %>', '<%= class_name %>.active.find(params[:id])'
+  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb", '<%= orm_instance.destroy %>', '<%= singular_table_name %>.logical_delete!'
+  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb", "permit(<%= attributes_names.map { |name| \":\#{name}\" }.join(', ') %>)", "permit(<%= attributes_names.map { |name| \":\#{name}\" }.join(', ') %>, :lock_version)"
+
+  prepend_file "./lib/templates/rails/scaffold_controller/controller.rb", "# coding: utf-8\n"
+  append_file "./lib/templates/rails/scaffold_controller/controller.rb", <<BEFORE_ACTIONS, after: "ApplicationController\n"
 <%- attributes.select(&:reference?).each do |attribute| -%>
   before_action :set_<%= attribute.name %>_options, only: [:index, :show, :edit, :new, :update, :create]
 <%- end -%>
 BEFORE_ACTIONS
-  append_file "lib/templates/rails/scaffold_controller/controller.rb", <<'OPTIONS', after: "private\n"
+  append_file "./lib/templates/rails/scaffold_controller/controller.rb", <<'OPTIONS', after: "private\n"
     # Search params
     def search_params
       if params[:<%= singular_table_name %>_search]
@@ -538,7 +548,7 @@ OPTIONS
 
   case @design
   when :bootstrap
-    append_file "lib/templates/erb/scaffold/_form.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
+    append_file "./lib/templates/erb/scaffold/_form.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
 <%- attributes.each do |attribute| -%>
       <div class="row">
         <div class="col-md-12">
@@ -579,7 +589,7 @@ OPTIONS
       </div>
 <%- end -%>
 INPUTS
-    append_file "lib/templates/erb/scaffold/index.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
+    append_file "./lib/templates/erb/scaffold/index.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
 <%- attributes.each do |attribute| -%>
       <div class="row">
         <div class="col-md-12">
@@ -637,7 +647,7 @@ INPUTS
 <%- end -%>
 INPUTS
   when :material
-    append_file "lib/templates/erb/scaffold/_form.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
+    append_file "./lib/templates/erb/scaffold/_form.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
 <%- attributes.each_slice(2) do |pair| -%>
       <div class="row">
   <%- pair.each do |attribute| -%>
@@ -668,7 +678,7 @@ INPUTS
       </div>
 <%- end -%>
 INPUTS
-    append_file "lib/templates/erb/scaffold/index.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
+    append_file "./lib/templates/erb/scaffold/index.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
 <%- attributes.each_slice(2) do |pair| -%>
       <div class="row">
   <%- pair.each do |attribute| -%>
@@ -713,19 +723,15 @@ INPUTS
 
   ### Rakefile ###
 
-  append_file "Rakefile", <<RAKE
+  append_file "./Rakefile", <<RAKE
 desc 'Migration After task'
-task :after do
+task :i18n do
   puts 'generate i18n'
   puts `bundle exec rails g i18n_translation ja -f`
-  puts 'generate annotate'
-  puts `bundle exec annotate`
 end
 
 Rake::Task['db:migrate'].enhance do
-  Rake::Task['after'].invoke
-  puts 'generate erd'
-  Rake::Task['erd'].invoke
+  Rake::Task['i18n'].invoke
 end
 RAKE
 
