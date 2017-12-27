@@ -1,6 +1,4 @@
 # SwanTemplate
-Ruby on Rails complete template with bootstrap and material design.
-# SwanTemplate
 Ruby on Rails complete scaffold template with bootstrap and material design.
 You can use various additional functions just by scaffold.
 
