@@ -152,7 +152,7 @@ example
 
 ### i18n genarator
 
-Auto trancate and create i18n.yml after migration.
+Auto translate and create i18n.yml after migration.
 
 
 ## Suppurts
