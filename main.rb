@@ -476,21 +476,21 @@ LAYOUT
     gsub_file "./app/inputs/date_range_input.rb", "btn", "addon"
     gsub_file "./app/inputs/int_range_input.rb", "btn", "addon"
   end
-  gsub_file "lib/templates/rails/scaffold_controller/controller.rb", "@<%= plural_table_name %> = <%= orm_class.all(class_name) %>\n", <<INDEX
+  gsub_file "lib/templates/rails/scaffold_controller/controller.rb.tt", "@<%= plural_table_name %> = <%= orm_class.all(class_name) %>\n", <<INDEX
 @search_<%= singular_table_name %> = <%= class_name %>::Search.new(search_params)
     @<%= plural_table_name %> = @search_<%= singular_table_name %>.search(params[:page])
 INDEX
-  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb", '<%= orm_class.find(class_name, "params[:id]") %>', '<%= class_name %>.active.find(params[:id])'
-  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb", '<%= orm_instance.destroy %>', '<%= singular_table_name %>.logical_delete!'
-  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb", "permit(<%= attributes_names.map { |name| \":\#{name}\" }.join(', ') %>)", "permit(<%= attributes_names.map { |name| \":\#{name}\" }.join(', ') %>, :lock_version)"
+  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb.tt", '<%= orm_class.find(class_name, "params[:id]") %>', '<%= class_name %>.active.find(params[:id])'
+  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb.tt", '<%= orm_instance.destroy %>', '<%= singular_table_name %>.logical_delete!'
+  gsub_file "./lib/templates/rails/scaffold_controller/controller.rb.tt", "permit(<%= attributes_names.map { |name| \":\#{name}\" }.join(', ') %>)", "permit(<%= attributes_names.map { |name| \":\#{name}\" }.join(', ') %>, :lock_version)"
 
-  prepend_file "./lib/templates/rails/scaffold_controller/controller.rb", "# coding: utf-8\n"
-  append_file "./lib/templates/rails/scaffold_controller/controller.rb", <<BEFORE_ACTIONS, after: "ApplicationController\n"
+  prepend_file "./lib/templates/rails/scaffold_controller/controller.rb.tt", "# coding: utf-8\n"
+  append_file "./lib/templates/rails/scaffold_controller/controller.rb.tt", <<BEFORE_ACTIONS, after: "ApplicationController\n"
 <%- attributes.select(&:reference?).each do |attribute| -%>
   before_action :set_<%= attribute.name %>_options, only: [:index, :show, :edit, :new, :update, :create]
 <%- end -%>
 BEFORE_ACTIONS
-  append_file "./lib/templates/rails/scaffold_controller/controller.rb", <<'OPTIONS', after: "private\n"
+  append_file "./lib/templates/rails/scaffold_controller/controller.rb.tt", <<'OPTIONS', after: "private\n"
     # Search params
     def search_params
       if params[:<%= singular_table_name %>_search]
