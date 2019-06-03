@@ -45,7 +45,7 @@ This is material design sample.
 
 Example this image.
 
-![フシギダネ](http://pokesoku.co/wp-content/uploads/2016/08/th3_img_0.jpg)
+![フシギダネ](https://www.pokemon.jp/zukan/images/l/ff08ec6198db300abc91e69605469427.png)
 
 
 Genarated page is this.
