@@ -90,7 +90,7 @@ SimpleForm.setup do |config|
       i.use :error, wrap_with: { tag: 'span', class: 'help-block has-error' }
       i.wrapper :input_group, tag: :span, class: ["input-group-btn", "input-group-sm"] do |s|
         s.wrapper :button, tag: :button, type: :button, class: ["btn", "btn-info", "btn-fab", "btn-fab-mini"] do |b|
-          b.wrapper :icon, tag: :i, class: ["glyphicon", "glyphicon-paperclip"] do end
+          b.wrapper :icon, tag: :i, class: "material-icons" do "attachment" end
         end
       end
     end

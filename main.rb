@@ -65,7 +65,8 @@ gem "select2-rails"
 gem 'momentjs-rails'
 gem 'bootstrap-datepicker-rails', '1.1.1.11'
 # bootstrap
-gem 'bootstrap-sass'
+gem 'bootstrap', '~> 4.3.1'
+gem 'material_icons'
 
 group :development, :test do
   # コンソールでActiveRecordオブジェクトを整形
@@ -150,12 +151,12 @@ after_bundle do
   copy_file './app/assets/stylesheets/application.css', './app/assets/stylesheets/application.scss'
   remove_file './app/assets/stylesheets/application.css'
 
-  run "wget https://raw.github.com/svenfuchs/rails-i18n/master/rails/locale/ja.yml -P config/locales/"
+  get "https://raw.github.com/svenfuchs/rails-i18n/master/rails/locale/ja.yml", "./config/locales/ja.yml"
 
   rake "app:templates:copy"
   generate "simple_form:install --bootstrap -f"
   generate 'kaminari:config'
-  generate 'kaminari:views bootstrap3'
+  generate 'kaminari:views bootstrap4'
   generate 'erd:install'
   generate 'annotate:install'
 
@@ -164,7 +165,7 @@ after_bundle do
   gsub_file "./lib/generators/swaffold/swaffold_generator.rb", "NamedBase", "ScaffoldGenerator"
    gsub_file "./lib/generators/swaffold/swaffold_generator.rb", "source_root File.expand_path('../templates', __FILE__)", <<'HOOK'
 def main
-    insert_into_file "app/views/layouts/application.html.erb", "<li><%= link_to #{class_name.singularize}.model_name.human, #{plural_table_name}_path %></li>\n", after: "<ul class=\"nav navbar-nav\">\n"
+    insert_into_file "app/views/layouts/application.html.erb", "<li><%= link_to #{class_name.singularize}.model_name.human, #{plural_table_name}_path %></li>\n", after: "<ul class="navbar-nav mr-auto">\n"
   end
 #  hook_for :scaffold
 HOOK
@@ -221,40 +222,30 @@ JS
  *= require select2
  *= require select2-bootstrap
  *= require bootstrap-datepicker
+ *= require material_icons
  * require bootstrap-timepicker
 CSS
 
     append_file "./app/assets/stylesheets/application.scss", <<CSS
 
 @import "_custom_variables.scss";
-@import "bootstrap-sprockets";
 @import "bootstrap";
 /*@import 'bootstrap-timepicker';*/
 
-@font-face{
-  font-family: 'Glyphicons Halflings';
-  src: image-url("bootstrap/glyphicons-halflings-regular.eot");
-  src: image-url("bootstrap/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"),
-       image-url("bootstrap/glyphicons-halflings-regular.woff") format("woff"),
-       image-url("bootstrap/glyphicons-halflings-regular.ttf") format("truetype"),
-       image-url("bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg")
-}
-
-body { padding-top: 50px; padding-bottom: 50px; }
-footer.navbar { min-height: 30px; }
-abbr { color: $brand-danger; }
+body { margin-top: 60px; margin-bottom: 30px; }
+abbr { color: $danger; }
 
 /* For Datepicker */
 .form-actions { text-align: center; }
 div.datepicker-days > table.table-condensed > thead > tr > th.dow:first-child,
 div.datepicker-days > table.table-condensed > tbody > tr > td.day:first-child {
-  /*background-color: lighten($brand-danger, 33.3%);*/
-  color: $brand-danger;
+  /*background-color: lighten($danger, 33.3%);*/
+  color: $danger;
 }
 div.datepicker-days > table.table-condensed > thead > tr > th.dow:last-child,
 div.datepicker-days > table.table-condensed > tbody > tr > td.day:last-child {
-  /*background-color: lighten($brand-primary, 33.3%);*/
-  color: $brand-primary;
+  /*background-color: lighten($primary, 33.3%);*/
+  color: $primary;
 }
 CSS
 
@@ -312,22 +303,11 @@ JS
 CSS
     append_file "./app/assets/stylesheets/application.scss", <<CSS
 
-@import "bootstrap-sprockets";
 @import "bootstrap";
 /*@import 'bootstrap-timepicker';*/
 
-@font-face{
-  font-family: 'Glyphicons Halflings';
-  src: image-url("bootstrap/glyphicons-halflings-regular.eot");
-  src: image-url("bootstrap/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"),
-       image-url("bootstrap/glyphicons-halflings-regular.woff") format("woff"),
-       image-url("bootstrap/glyphicons-halflings-regular.ttf") format("truetype"),
-       image-url("bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg")
-}
-
-body { padding-top: 50px; padding-bottom: 50px; }
-footer.navbar { min-height: 30px; }
-abbr { color: $brand-danger; }
+body { margin-top: 60px; margin-bottom: 30px; }
+abbr { color: $danger; }
 .form-actions { text-align: center; }
 .form-group.select { margin-top: 0; }
 
@@ -335,13 +315,13 @@ abbr { color: $brand-danger; }
 .form-actions { text-align: center; }
 div.datepicker-days > table.table-condensed > thead > tr > th.dow:first-child,
 div.datepicker-days > table.table-condensed > tbody > tr > td.day:first-child {
-  /*background-color: lighten($brand-danger, 33.3%);*/
-  color: $brand-danger;
+  /*background-color: lighten($danger, 33.3%);*/
+  color: $danger;
 }
 div.datepicker-days > table.table-condensed > thead > tr > th.dow:last-child,
 div.datepicker-days > table.table-condensed > tbody > tr > td.day:last-child {
-  /*background-color: lighten($brand-primary, 33.3%);*/
-  color: $brand-primary;
+  /*background-color: lighten($primary, 33.3%);*/
+  color: $primary;
 }
 CSS
 
@@ -383,85 +363,8 @@ ACTIVERECORD
 
   ### Views ###
 
-  create_file "./app/views/layouts/application.html.erb", <<LAYOUT, force: true
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<title>#{@app_name.camelize}</title>
-<%= csrf_meta_tags %>
-
-<%= stylesheet_link_tag 'application', media: 'all', :'data-turbolinks-track' => 'reload' %>
-<%= javascript_include_tag 'application', :'data-turbolinks-track' => 'reload' %>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<%= csrf_meta_tags %>
-<%#= favicon_link_tag '/images/icon-144.png', :rel => 'apple-touch-icon', :type => 'image/png', :sizes => '144x144' %>
-<%#= favicon_link_tag '/images/icon-114.png', :rel => 'apple-touch-icon', :type => 'image/png', :sizes => '114x114' %>
-<%#= favicon_link_tag '/images/icon-72.png', :rel => 'apple-touch-icon', :type => 'image/png', :sizes => '72x72' %>
-<%#= favicon_link_tag '/images/icon.png', :rel => 'apple-touch-icon', :type => 'image/png' %>
-<%#= favicon_link_tag '/images/favicon.ico', :rel => 'shortcut icon' %>
-</head>
-<body>
-
-<nav class="navbar navbar-fixed-top navbar-inverse">
-<div class="container">
-<!-- Brand and toggle get grouped for better mobile display -->
-<div class="navbar-header">
-<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-<span class="sr-only">Toggle navigation</span>
-<span class="icon-bar"></span>
-<span class="icon-bar"></span>
-<span class="icon-bar"></span>
-</button>
-<a class="navbar-brand" href="#">#{@app_name.camelize}</a>
-<%#= link_to "#{@app_name.camelize}", root_path, class: "navbar-brand" %>
-</div>
-
-<!-- Collect the nav links, forms, and other content for toggling -->
-<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-<ul class="nav navbar-nav">
-</ul>
-<ul class="nav navbar-nav navbar-right">
-<li><a href="#">Link</a></li>
-<li class="dropdown">
-<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-<ul class="dropdown-menu">
-<li><a href="#">Action</a></li>
-<li><a href="#">Another action</a></li>
-<li><a href="#">Something else here</a></li>
-<li role="separator" class="divider"></li>
-<li><a href="#">Separated link</a></li>
-</ul>
-</li>
-</ul>
-</div><!-- /.navbar-collapse -->
-</div><!-- /.container -->
-</nav>
-
-<div class="container">
-<%= content_tag :h2, (@page_name || [controller_name.titleize, action_name].join(":")) %>
-
-<%- flash.each do |name, msg| -%>
-<div class="alert alert-<%= name == "notice" ? "success" : "danger" %>">
-<button type="button" class="close" data-dismiss="alert">×</button>
-<%= msg %>
-</div>
-<%- end -%>
-
-<%= yield %>
-
-<footer class="navbar navbar-inverse navbar-fixed-bottom">
-<div class="container">
-<p class="text-right"> Copyright &copy; swan_match</p>
-</div>
-</footer>
-
-</div><!-- /container -->
-
-</body>
-</html>
-LAYOUT
+  copy_file "./app/views/layouts/application_bs4.html.erb", "./app/views/layouts/application.html.erb", force: true
+  gsub_file "./app/views/layouts/application.html.erb", "APPNAME", @app_name.camelize
 
   ### Scaffold Templates ###
 

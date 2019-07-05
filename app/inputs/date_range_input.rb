@@ -9,20 +9,20 @@ class DateRangeInput < SimpleForm::Inputs::Base
       template.concat @builder.text_field("#{attribute_name}_from", input_html_options)
       template.concat calender_icon
       template.concat range_icon
-      template.concat @builder.text_field("#{attribute_name}_from", input_html_options)
+      template.concat @builder.text_field("#{attribute_name}_to", input_html_options)
       template.concat calender_icon
     end
   end
 
   def calender_icon
-    template.content_tag(:span, class: 'input-group-btn btn for-datepicker') do
-      template.concat '<span class="add-on glyphicon glyphicon-calendar"></span>'.html_safe
+    template.content_tag(:div, class: 'input-group-prepend for-datepicker') do
+      template.concat '<span class="input-group-text"><i class="material-icons">event</i></span>'.html_safe
     end
   end
 
   def range_icon
-    template.content_tag(:span, class: 'input-group-btn btn') do
-      template.concat '<span class="add-on glyphicon glyphicon-option-horizontal"></span>'.html_safe
+    template.content_tag(:span, class: 'input-group-prepend addon') do
+      template.concat '<span class="input-group-text"><i class="material-icons">more_horiz</i></span>'.html_safe
     end
   end
 
