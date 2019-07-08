@@ -13,7 +13,7 @@ class IntRangeInput < SimpleForm::Inputs::Base
   end
 
   def range_icon
-    template.content_tag(:span, class: 'input-group-prepend btn') do
+    template.content_tag(:span, class: 'input-group-prepend') do
       template.concat '<span class="input-group-text"><i class="material-icons">more_horiz</i></span>'.html_safe
     end
   end

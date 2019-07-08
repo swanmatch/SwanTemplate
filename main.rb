@@ -27,6 +27,12 @@ end
 
 @design = multiple_choice("Please Choise use design frame work", [:bootstrap, :material])
 
+def bootstrap?
+  @design == :bootstrap
+end
+def material?
+  @design == :material
+end
 
 ### Gem ###
 
@@ -63,9 +69,10 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem "select2-rails"
 gem 'momentjs-rails'
-gem 'bootstrap-datepicker-rails', '1.1.1.11'
+gem 'bootstrap-datepicker-rails'
 # bootstrap
 gem 'bootstrap', '~> 4.3.1'
+#{"gem 'material-sass', '4.1.1'" if material? }
 gem 'material_icons'
 
 group :development, :test do
@@ -252,38 +259,40 @@ CSS
     create_file "./app/assets/stylesheets/_custom_variables.scss", "/* Go to http://www.lavishbootstrap.com */"
 
   when :material
-    directory "./app/assets/stylesheets/material"
-    directory "./app/assets/javascripts/material"
 
     gsub_file "./app/assets/javascripts/application.js", "//= require_tree .", <<JS
 // require_tree .
 //= require jquery
 // require jquery_nested_form
-//= require material/material
-//= require material/ripples
 //= require select2
 //= require select2_locale_ja
 // require jquery.remotipart
 // require jquery.iframe-transport.js
-//= require bootstrap-sprockets
-//= require bootstrap-datepicker/core
-//= require bootstrap-datepicker/locales/bootstrap-datepicker.ja
+//= require popper
+//= require bootstrap
+//= require material
+// require bootstrap-datepicker/core
+// require bootstrap-datepicker/locales/bootstrap-datepicker.ja
 // require bootstrap-timepicker
 
 $(document).on("turbolinks:before-cache", function() {
     $('.select2-input').select2('destroy');
 });
 $(document).on('turbolinks:load', function () {
-  // material design initialize
   $('.select2').parents('.form-group').removeClass('label-floating');
-  $.material.init();
   $('.select2').select2({
 //    theme: "bootstrap"
   });
-  $('input.datepicker').datepicker({
+  $('input.datepicker').pickdate({
     format: 'yyyy/mm/dd',
-    language: 'ja',
-    autoclose: true
+    labelMonthNext: '翌月',
+    labelMonthPrev: '先月',
+    labelMonthSelect: '月',
+    labelYearSelect: '年',
+    monthsLong: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    monthsShort: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    weekdaysFull: ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
+    weekdaysShort: ['日', '月', '火', '水', '木', '金', '土'],
   });
   $('span.for-datepicker').on('click', function() {
     $(this).prev().focus();
@@ -294,20 +303,19 @@ JS
     gsub_file "./app/assets/stylesheets/application.scss", " *= require_tree .", " * require_tree ."
 
     append_file "./app/assets/stylesheets/application.scss", <<CSS, after: "require_self\n"
- *= require material/bootstrap-material-design
- *= require material/ripples
  *= require select2
  *= require select2-bootstrap
- *= require bootstrap-datepicker
+ *= require material_icons
+ * require bootstrap-datepicker
  * require bootstrap-timepicker
 CSS
     append_file "./app/assets/stylesheets/application.scss", <<CSS
 
-@import "bootstrap";
+@import "material";
 /*@import 'bootstrap-timepicker';*/
 
 body { margin-top: 60px; margin-bottom: 30px; }
-abbr { color: $danger; }
+abbr { color: theme-color("danger"); }
 .form-actions { text-align: center; }
 .form-group.select { margin-top: 0; }
 
@@ -316,12 +324,12 @@ abbr { color: $danger; }
 div.datepicker-days > table.table-condensed > thead > tr > th.dow:first-child,
 div.datepicker-days > table.table-condensed > tbody > tr > td.day:first-child {
   /*background-color: lighten($danger, 33.3%);*/
-  color: $danger;
+  color: theme-color("danger");
 }
 div.datepicker-days > table.table-condensed > thead > tr > th.dow:last-child,
 div.datepicker-days > table.table-condensed > tbody > tr > td.day:last-child {
   /*background-color: lighten($primary, 33.3%);*/
-  color: $primary;
+  color: theme-color("info");
 }
 CSS
 
