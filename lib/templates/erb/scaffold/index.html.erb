@@ -1,4 +1,4 @@
-<div class="well">
+<div class="card bg-light mb-3"><div class="card-body">
   <%%= simple_form_for @search_<%= singular_table_name %>, url: <%= index_helper %>_path, method: :get do |f| %>
     <div class="form-inputs">
     </div>
@@ -6,9 +6,9 @@
       <%%= f.button :submit, class: "btn btn-primary", value: "検索" %>
     </div>
   <%% end %>
-</div>
+</div></div>
 
-<div class="well">
+<div class="card bg-light mb-3"><div class="card-body">
   <%%- if @<%= plural_table_name %>.blank? -%>
     <p><%%= t("activerecord.models.<%= singular_table_name %>") %>は登録されていません。</p>
   <%%- else -%>
@@ -42,7 +42,7 @@
       <%%= paginate @<%= plural_table_name %> %>
     </div>
   <%%- end -%>
-</div>
+</div></div>
 
 <div class="text-center">
   <%%= link_to '新規作成', new_<%= singular_table_name %>_path, class: 'btn btn-info' %>

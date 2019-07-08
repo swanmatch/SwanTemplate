@@ -38,6 +38,19 @@ SimpleForm.setup do |config|
     b.use :error, wrap_with: { tag: 'span', class: 'help-block has-error' }
     #    end
   end
+  config.wrappers :floating, tag: 'div', class: 'form-group floating-label', error_class: 'has-error' do |b|
+    b.use :html5
+    b.use :min_max
+    b.use :maxlength
+    b.optional :minlength
+    b.use :placeholder
+    b.optional :pattern
+    b.optional :readonly
+    b.use :label, class: 'control-label'
+    b.use :input
+    b.use :hint, wrap_with: { tag: 'span', class: 'help-block' }
+    b.use :error, wrap_with: { tag: 'span', class: 'help-block has-error' }
+  end
   #  config.wrappers :prepend, tag: 'div', class: 'form-group', error_class: 'has-error' do |b|
   #    b.use :html5
   #    b.use :placeholder
@@ -80,7 +93,7 @@ SimpleForm.setup do |config|
 
   end
 
-  config.wrappers :file, tag: :div, class: 'form-group label-floating', error_class: 'has-error' do |f|
+  config.wrappers :file, tag: :div, class: 'form-group floating-label', error_class: 'has-error' do |f|
     f.use :html5
     f.use :label
     f.use :input, type: :file
@@ -90,7 +103,7 @@ SimpleForm.setup do |config|
       i.use :error, wrap_with: { tag: 'span', class: 'help-block has-error' }
       i.wrapper :input_group, tag: :span, class: ["input-group-btn", "input-group-sm"] do |s|
         s.wrapper :button, tag: :button, type: :button, class: ["btn", "btn-info", "btn-fab", "btn-fab-mini"] do |b|
-          b.wrapper :icon, tag: :i, class: ["glyphicon", "glyphicon-paperclip"] do end
+          b.wrapper :icon, tag: :i, class: "material-icons" do "attachment" end
         end
       end
     end
@@ -99,5 +112,5 @@ SimpleForm.setup do |config|
   # Check the Bootstrap docs (http://getbootstrap.com/)
   # to learn about the different styles for forms and inputs,
   # buttons and other elements.
-  config.default_wrapper = :bootstrap3
+  config.default_wrapper = :floating
 end

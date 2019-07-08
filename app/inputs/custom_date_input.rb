@@ -20,8 +20,8 @@ class CustomDateInput < SimpleForm::Inputs::Base
   end
 
   def calender_icon
-    template.content_tag(:span, class: 'input-group-btn btn for-datepicker') do
-      template.concat '<span class="add-on glyphicon glyphicon-calendar"></span>'.html_safe
+    template.content_tag(:div, class: 'input-group-prepend for-datepicker') do
+      template.concat '<span class="input-group-text"><i class="material-icons">event</i></span>'.html_safe
     end
   end
 

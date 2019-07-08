@@ -7,7 +7,7 @@ url =
     <%= [controller_class_path, singular_table_name].flatten.compact.join("_")%>_path(@<%= singular_table_name %>)
   end
 -%>
-<div class="well">
+<div class="card bg-light mb-3"><div class="card-body">
   <%%= simple_form_for(@<%= singular_table_name %>, url: url) do |f| %>
     <%%= f.error_notification %>
 
@@ -21,4 +21,4 @@ url =
     </div>
     <%%- end -%>
   <%% end %>
-</div>
+</div></div>
