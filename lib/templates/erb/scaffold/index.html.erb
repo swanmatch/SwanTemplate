@@ -2,8 +2,8 @@
   <%%= simple_form_for @search_<%= singular_table_name %>, url: <%= index_helper %>_path, method: :get do |f| %>
     <div class="form-inputs">
     </div>
-    <div class="form-actions search text-right">
-      <%%= f.button :submit, class: "btn btn-primary", value: "検索" %>
+    <div class="form-actions search d-flex justify-content-end">
+      <%%= f.button :submit, class: "btn btn-primary col-md-3 col-sm-5", value: "検索" %>
     </div>
   <%% end %>
 </div></div>
@@ -32,7 +32,7 @@
 <%- attributes.reject(&:password_digest?).each do |attribute| -%>
               <td><%%= <%= singular_table_name %>.<%= attribute.name %> %></td>
 <%- end -%>
-              <td><%%= link_to '編集', edit_<%= singular_table_name %>_path(<%= singular_table_name %>), class: 'btn btn-primary' %></td>
+              <td><%%= link_to '編集', edit_<%= singular_table_name %>_path(<%= singular_table_name %>), class: 'btn btn-primary btn-block' %></td>
             </tr>
           <%% end %>
         </tbody>
@@ -44,6 +44,6 @@
   <%%- end -%>
 </div></div>
 
-<div class="text-center">
-  <%%= link_to '新規作成', new_<%= singular_table_name %>_path, class: 'btn btn-info' %>
+<div class="text-center row justify-content-around">
+  <%%= link_to '新規作成', new_<%= singular_table_name %>_path, class: 'btn btn-info col-md-3 col-sm-5' %>
 </div>

@@ -76,10 +76,10 @@ SimpleForm.setup do |config|
   end
 
   # vertical input for radio buttons and check boxes
-  config.wrappers :vertical_collection, item_wrapper_class: 'form-check', class: 'form-group', error_class: 'form-group-invalid', valid_class: 'form-group-valid' do |b|
+  config.wrappers :vertical_collection, item_wrapper_class: 'form-check', tag: 'fieldset', class: 'form-group', error_class: 'form-group-invalid', valid_class: 'form-group-valid' do |b|
     b.use :html5
     b.optional :readonly
-    b.wrapper :legend_tag, tag: 'lavel', class: 'col-form-label pt-0' do |ba|
+    b.wrapper :legend_tag, tag: 'legend', class: 'col-form-label pt-0' do |ba|
       ba.use :label_text
     end
     b.use :input, class: 'form-check-input', error_class: 'is-invalid', valid_class: 'is-valid'
@@ -87,6 +87,17 @@ SimpleForm.setup do |config|
     b.use :hint, wrap_with: { tag: 'small', class: 'form-text text-muted' }
   end
 
+  # vertical input for inline radio buttons and check boxes
+  config.wrappers :vertical_collection_inline, item_wrapper_class: 'form-check form-check-inline', tag: 'fieldset', class: 'form-group', error_class: 'form-group-invalid', valid_class: 'form-group-valid' do |b|
+    b.use :html5
+    b.optional :readonly
+    b.wrapper :legend_tag, tag: 'legend', class: 'col-form-label pt-0' do |ba|
+      ba.use :label_text
+    end
+    b.use :input, class: 'form-check-input', error_class: 'is-invalid', valid_class: 'is-valid'
+    b.use :full_error, wrap_with: { tag: 'div', class: 'invalid-feedback d-block' }
+    b.use :hint, wrap_with: { tag: 'small', class: 'form-text text-muted' }
+  end
 
   # vertical file input
   config.wrappers :vertical_file, tag: 'div', class: 'form-group', error_class: 'form-group-invalid', valid_class: 'form-group-valid' do |b|
@@ -399,17 +410,17 @@ SimpleForm.setup do |config|
 
 
   # The default wrapper to be used by the FormBuilder.
-  config.default_wrapper = :floating_labels_form
+  config.default_wrapper = :horizontal_form
 
   # Custom wrappers for input types. This should be a hash containing an input
   # type as key and the wrapper that will be used for all inputs with specified type.
   config.wrapper_mappings = {
     boolean:       :horizontal_boolean,
-    check_boxes:   :vertical_collection_inline,
+    check_boxes:   :horizontal_collection_item,
     date:          :horizontal_multi_select,
     datetime:      :horizontal_multi_select,
     file:          :horizontal_file,
-    radio_buttons: :vertical_collection_inline,
+    radio_buttons: :horizontal_collection_item,
     range:         :horizontal_range,
     time:          :horizontal_multi_select
   }

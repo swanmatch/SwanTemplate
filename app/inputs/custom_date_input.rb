@@ -11,7 +11,7 @@
 #  end
 #end
 class CustomDateInput < SimpleForm::Inputs::Base
-  def input
+  def input(wrapper_options)
     template.content_tag(:div, class: "input-group input-group-datepicker") do
       input_html_options[:class] << ['form-control', 'datepicker']
       template.concat @builder.text_field(attribute_name, input_html_options)

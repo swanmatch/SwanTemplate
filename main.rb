@@ -154,7 +154,6 @@ gsub_file "./config/database.yml", "_production", ""
 after_bundle do
   ### Make Files ###
 
-#  run 'mv app/assets/stylesheets/application.css app/assets/stylesheets/application.scss'
   copy_file './app/assets/stylesheets/application.css', './app/assets/stylesheets/application.scss'
   remove_file './app/assets/stylesheets/application.css'
 
@@ -170,9 +169,9 @@ after_bundle do
   generate "generator swaffold"
   prepend_file "./lib/generators/swaffold/swaffold_generator.rb", "require 'rails/generators/rails/scaffold/scaffold_generator'\n"
   gsub_file "./lib/generators/swaffold/swaffold_generator.rb", "NamedBase", "ScaffoldGenerator"
-   gsub_file "./lib/generators/swaffold/swaffold_generator.rb", "source_root File.expand_path('../templates', __FILE__)", <<'HOOK'
+  gsub_file "./lib/generators/swaffold/swaffold_generator.rb", "source_root File.expand_path('templates', __dir__)", <<'HOOK'
 def main
-    insert_into_file "app/views/layouts/application.html.erb", "<li><%= link_to #{class_name.singularize}.model_name.human, #{plural_table_name}_path %></li>\n", after: "<ul class="navbar-nav mr-auto">\n"
+    insert_into_file "app/views/layouts/application.html.erb", "<li class=\"nav-item\"><%= link_to #{class_name.singularize}.model_name.human, #{plural_table_name}_path, class: 'nav-link' %></li>\n", after: "<ul class=\"navbar-nav mr-auto\">\n"
   end
 #  hook_for :scaffold
 HOOK
@@ -181,12 +180,29 @@ HOOK
   session_migration_file = Dir.glob("db/migrate/*_add_sessions_table.rb").first
   gsub_file session_migration_file, "ActiveRecord::Migration\n", "ActiveRecord::Migration[5.1]\n"
 
-  copy_file "./config/initializers/simple_form.rb", force: true
-  copy_file "./config/initializers/simple_form_#{@design.to_s.downcase}.rb", force: true
-
   copy_file "./config/locales/kaminari.ja.yml"
   copy_file "./config/locales/simple_form.ja.yml"
 
+  if bootstrap?
+    gsub_file "./config/initializers/simple_form_bootstrap.rb", ", class: 'col-sm-9'", "", force: true
+    gsub_file "./config/initializers/simple_form_bootstrap.rb", "col-sm-3 ",  "", force: true
+    gsub_file "./config/initializers/simple_form_bootstrap.rb", ":grid_wrapper", ":input_wrapper", force: true
+    gsub_file "./config/initializers/simple_form_bootstrap.rb", "config.default_wrapper = :vertical_form", "config.default_wrapper = :horizontal_form", force: true
+    gsub_file "./config/initializers/simple_form_bootstrap.rb", /config.wrapper_mappings.*}/m, <<MAPPING
+config.wrapper_mappings = {
+               boolean: :horizontal_boolean,
+           check_boxes: :horizontal_collection_inline,
+                  date: :horizontal_multi_select,
+              datetime: :horizontal_multi_select,
+                  file: :horizontal_file,
+         radio_buttons: :horizontal_collection_inline,
+    enum_radio_buttons: :horizontal_collection_inline,
+                 range: :horizontal_range,
+                  time: :horizontal_multi_select
+  }
+MAPPING
+  else # material?
+  end
 
   ### Assets ###
 
@@ -461,7 +477,7 @@ OPTIONS
     append_file "./lib/templates/erb/scaffold/_form.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
 <%- attributes.each do |attribute| -%>
       <div class="row">
-        <div class="col-md-12">
+        <div class="col-md">
   <%- if attribute.reference? -%>
           <%%= f.association(
             :<%= attribute.name %>,
@@ -476,9 +492,8 @@ OPTIONS
             input_wrapper_html: {
               class: "col-md-9"
             },
-              disabled: only_show
-            )
-          %>
+            disabled: only_show
+          ) %>
   <%- else -%>
           <%%= f.input(
             :<%= attribute.name %>,
@@ -491,9 +506,8 @@ OPTIONS
             input_wrapper_html: {
               class: "col-md-9"
             },
-              disabled: only_show
-            )
-          %>
+            disabled: only_show
+          ) %>
   <%- end -%>
         </div>
       </div>
@@ -502,7 +516,7 @@ INPUTS
     append_file "./lib/templates/erb/scaffold/index.html.erb", <<INPUTS, after: "<div class=\"form-inputs\">\n"
 <%- attributes.each do |attribute| -%>
       <div class="row">
-        <div class="col-md-12">
+        <div class="col-md">
   <%- if attribute.reference? -%>
           <%%= f.input(
             :<%= attribute.name %>,
@@ -562,7 +576,7 @@ INPUTS
       <div class="row">
   <%- pair.each do |attribute| -%>
     <%- if pair -%>
-        <div class="col-md-6">
+        <div class="col-md">
       <%- if attribute.reference? -%>
           <%%= f.association(
             :<%= attribute.name %>,
@@ -593,7 +607,7 @@ INPUTS
       <div class="row">
   <%- pair.each do |attribute| -%>
     <%- if pair -%>
-        <div class="col-md-6">
+        <div class="col-md">
       <%- if attribute.reference? -%>
           <%%= f.input(
             :<%= attribute.name %>,
