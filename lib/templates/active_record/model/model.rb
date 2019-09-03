@@ -69,7 +69,7 @@ search_attrs = {
     case attribute.type
     when :string, :text -%>
       if self.<%= attribute.name %>.present?
-        model = model.where("`<%= table_name %>`.`<%= attribute.name %>` like ?", "%#{self.<%= attribute.name %>}%")
+        model = model.where("`<%= table_name %>`.`<%= attribute.name %>` LIKE ?", "%#{self.<%= attribute.name %>}%")
       end
   <%- when :date, :time, :date_time, :timestamp, :integer, :float, :decimal -%>
       if self.<%= attribute.name %>_from.present? && self.<%= attribute.name %>_to.present?

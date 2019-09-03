@@ -111,8 +111,9 @@ gsub_file "./Gemfile", "# gem 'therubyracer'", "gem 'therubyracer'"
 
 ### Application Settings ###
 
-copy_file "./lib/custom_logger.rb"
-copy_file "./lib/log4r.rb"
+copy_file "./config/initializers/custom_logger.rb"
+copy_file "./config/initializers/log4r.rb"
+create_file "./config/initializers/session_store.rb", "Rails.application.config.session_store :active_record_store, key: '_#{@app_name}_session"
 
 append_file './config/application.rb', <<ADD_REQUIRE, after: "Bundler.require(*Rails.groups)\n"
 
@@ -121,7 +122,7 @@ include Log4r
 ADD_REQUIRE
 
 application <<'APP'
-config.active_record.default_timezone = :local
+    config.active_record.default_timezone = :local
     config.time_zone = 'Tokyo'
 
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
@@ -130,20 +131,29 @@ config.active_record.default_timezone = :local
     I18n.enforce_available_locales = false
 
     config.colorize_logging = false
-    require File.dirname(__FILE__) + "/../lib/custom_logger"
+    require File.dirname(__FILE__) + "/../config/initializers/custom_logger"
     config.logger = CustomLogger::SystemLogger.instance.logger
     Log4r::Logger.send :include, ActiveRecord::SessionStore::Extension::LoggerSilencer
 
+    config.enable_dependency_loading = true
     config.autoload_paths += %W(#{config.root}/lib)
+#    config.paths.add 'lib/.', eager_load: true
 
     config.generators do |g|
       g.assets false
       g.test_framework false
       g.helper false
+      g.system_tests = nil
+      g.template_engine :erb
     end
-    config.generators.template_engine = :erb
+
+    # Settings in config/environments/* take precedence over those specified here.
+    # Application configuration should go into files in config/initializers
+    # -- all .rb files in that directory are automatically loaded.
+
     # Don't generate system test files.
     config.generators.system_tests = nil
+  end
 APP
 
 append_file "./config/database.yml", " admin", after: "password:"
@@ -183,10 +193,10 @@ HOOK
   copy_file "./config/locales/kaminari.ja.yml"
   copy_file "./config/locales/simple_form.ja.yml"
 
-  if bootstrap?
-    gsub_file "./config/initializers/simple_form_bootstrap.rb", ", class: 'col-sm-9'", "", force: true
-    gsub_file "./config/initializers/simple_form_bootstrap.rb", "col-sm-3 ",  "", force: true
-    gsub_file "./config/initializers/simple_form_bootstrap.rb", ":grid_wrapper", ":input_wrapper", force: true
+  gsub_file "./config/initializers/simple_form_bootstrap.rb", ", class: 'col-sm-9'", "", force: true
+  gsub_file "./config/initializers/simple_form_bootstrap.rb", "col-sm-3 ",  "", force: true
+  gsub_file "./config/initializers/simple_form_bootstrap.rb", ":grid_wrapper", ":input_wrapper", force: true
+if bootstrap?
     gsub_file "./config/initializers/simple_form_bootstrap.rb", "config.default_wrapper = :vertical_form", "config.default_wrapper = :horizontal_form", force: true
     gsub_file "./config/initializers/simple_form_bootstrap.rb", /config.wrapper_mappings.*}/m, <<MAPPING
 config.wrapper_mappings = {
@@ -202,6 +212,20 @@ config.wrapper_mappings = {
   }
 MAPPING
   else # material?
+    gsub_file "./config/initializers/simple_form_bootstrap.rb", "config.default_wrapper = :vertical_form", "config.default_wrapper = :floating_labels_form", force: true
+    gsub_file "./config/initializers/simple_form_bootstrap.rb", /config.wrapper_mappings.*}/m, <<MAPPING
+config.wrapper_mappings = {
+               boolean: :vertical_boolean,
+           check_boxes: :vertical_collection_inline,
+                  date: :vertical_multi_select,
+              datetime: :vertical_multi_select,
+                  file: :vertical_file,
+         radio_buttons: :vertical_collection_inline,
+    enum_radio_buttons: :vertical_collection_inline,
+                 range: :vertical_range,
+                  time: :vertical_multi_select
+  }
+MAPPING
   end
 
   ### Assets ###
@@ -251,7 +275,7 @@ CSS
 
     append_file "./app/assets/stylesheets/application.scss", <<CSS
 
-@import "_custom_variables.scss";
+@import "_custom_variables";
 @import "bootstrap";
 /*@import 'bootstrap-timepicker';*/
 
@@ -355,16 +379,17 @@ CSS
 
   append_file "./app/models/application_record.rb", <<ACTIVERECORD, after: "self.abstract_class = true\n"
 
+  include CustomValidators
+
   scope :deleted, -> { where.not(deleted_at: nil)}
   scope :active, -> { where(deleted_at: nil)}
   scope :column_symbols, -> { column_names.map(&:to_sym) }
 #  records_with_operator_on :create, :update, :destroy
-#  before_save -> { self.deleted_by = nil if self.deleted_at.blank? }
 
   # 論理削除
   def logical_delete!
     self.deleted_at = Time.zone.now
-#    self.deleted_by = operator.try(:id)
+    self.deleted_by = operator.try(:id)
     self.save!(validate: false)
   end
 
@@ -375,13 +400,10 @@ CSS
   def active?
     self.deleted_at.blank?
   end
-
-  def to_s
-    "\#{self.try(:name) || self.id}"
-  end
 ACTIVERECORD
-
-  copy_file "./lib/active_model_base.rb"
+  copy_file "./app/models/concerns/active_model_base.rb"
+  copy_file "./app/models/concerns/custom_validators.rb"
+  copy_file "./app/models/session.rb"
 
 
   ### Views ###

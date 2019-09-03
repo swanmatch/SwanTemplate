@@ -1,5 +1,5 @@
 <div class="card bg-light mb-3"><div class="card-body">
-  <%%= simple_form_for @search_<%= singular_table_name %>, url: <%= index_helper %>_path, method: :get do |f| %>
+  <%%= simple_form_for @search_<%= singular_table_name %>, url: search_<%= index_helper %>_path do |f| %>
     <div class="form-inputs">
     </div>
     <div class="form-actions search d-flex justify-content-end">
@@ -38,12 +38,12 @@
         </tbody>
       </table>
     </div>
-    <div class="text-center">
+    <div class="row justify-content-around">
       <%%= paginate @<%= plural_table_name %> %>
     </div>
   <%%- end -%>
 </div></div>
 
-<div class="text-center row justify-content-around">
+<div class="row justify-content-around">
   <%%= link_to '新規作成', new_<%= singular_table_name %>_path, class: 'btn btn-info col-md-3 col-sm-5' %>
 </div>
