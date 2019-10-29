@@ -113,11 +113,11 @@ gsub_file "./Gemfile", "# gem 'therubyracer'", "gem 'therubyracer'"
 
 copy_file "./config/initializers/custom_logger.rb"
 copy_file "./config/initializers/log4r.rb"
-create_file "./config/initializers/session_store.rb", "Rails.application.config.session_store :active_record_store, key: '_#{@app_name}_session"
+create_file "./config/initializers/session_store.rb", "Rails.application.config.session_store :active_record_store, key: '_#{@app_name}_session'"
 
 append_file './config/application.rb', <<ADD_REQUIRE, after: "Bundler.require(*Rails.groups)\n"
 
-require File.expand_path("../../lib/log4r.rb", __FILE__)
+require File.expand_path("../initializers/log4r.rb", __FILE__)
 include Log4r
 ADD_REQUIRE
 
@@ -153,7 +153,6 @@ application <<'APP'
 
     # Don't generate system test files.
     config.generators.system_tests = nil
-  end
 APP
 
 append_file "./config/database.yml", " admin", after: "password:"
@@ -384,6 +383,9 @@ CSS
   scope :deleted, -> { where.not(deleted_at: nil)}
   scope :active, -> { where(deleted_at: nil)}
   scope :column_symbols, -> { column_names.map(&:to_sym) }
+  scope :like, ->(column, word) { where("`\#{table_name}`.`\#{column}` LIKE ?", "%\#{word}%") }
+  scope :less, ->(column, value) { where("`\#{table_name}`.`\#{column}` <= ?", value) }
+  scope :more, ->(column, value) { where("`\#{table_name}`.`\#{column}` >= ?", value) }
 #  records_with_operator_on :create, :update, :destroy
 
   # 論理削除
@@ -399,6 +401,18 @@ CSS
 
   def active?
     self.deleted_at.blank?
+  end
+
+  def self.between(column, from, to)
+    if from.present? && to.present?
+      self.where(column => from..to)
+    elsif from.present?
+      self.more(column, from)
+    elsif to.present?
+      self.less(column, to)
+    else
+      all
+    end
   end
 ACTIVERECORD
   copy_file "./app/models/concerns/active_model_base.rb"

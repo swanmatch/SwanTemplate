@@ -65,20 +65,13 @@ search_attrs = {
       model = <%= class_name %>.active
 
 <%- attributes.each do |attribute| -%>
+
   <%-
     case attribute.type
     when :string, :text -%>
-      if self.<%= attribute.name %>.present?
-        model = model.where("`<%= table_name %>`.`<%= attribute.name %>` LIKE ?", "%#{self.<%= attribute.name %>}%")
-      end
+      model = model.like(:<%= attribute.name %>, "%#{self.<%= attribute.name %>}%") if self.<%= attribute.name %>.present?
   <%- when :date, :time, :date_time, :timestamp, :integer, :float, :decimal -%>
-      if self.<%= attribute.name %>_from.present? && self.<%= attribute.name %>_to.present?
-        model = model.where(<%= attribute.name %>: self.<%= attribute.name %>_from..<%= attribute.name %>_to)
-      elsif self.<%= attribute.name %>_from.present?
-        model = model.where("`<%= table_name %>`.`<%= attribute.name %>` >= ?", <%= attribute.name %>_from)
-      elsif self.<%= attribute.name %>_to.present?
-        model = model.where("`<%= table_name %>`.`<%= attribute.name %>` <= ?", <%= attribute.name %>_to)
-      end
+      model = model.between(:<%= attribute.name %>, self.<%= attribute.name %>_from, self.<%= attribute.name %>_to)
   <%- when :boolean -%>
       if self.<%= attribute.name %>.present?
         model = model.where(<%= attribute.name %>: self.<%= attribute.name %> )
