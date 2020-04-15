@@ -111,15 +111,7 @@ gsub_file "./Gemfile", "# gem 'therubyracer'", "gem 'therubyracer'"
 
 ### Application Settings ###
 
-copy_file "./config/initializers/custom_logger.rb"
-copy_file "./config/initializers/log4r.rb"
 create_file "./config/initializers/session_store.rb", "Rails.application.config.session_store :active_record_store, key: '_#{@app_name}_session'"
-
-append_file './config/application.rb', <<ADD_REQUIRE, after: "Bundler.require(*Rails.groups)\n"
-
-require File.expand_path("../initializers/log4r.rb", __FILE__)
-include Log4r
-ADD_REQUIRE
 
 application <<'APP'
     config.active_record.default_timezone = :local
@@ -131,9 +123,6 @@ application <<'APP'
     I18n.enforce_available_locales = false
 
     config.colorize_logging = false
-    require File.dirname(__FILE__) + "/../config/initializers/custom_logger"
-    config.logger = CustomLogger::SystemLogger.instance.logger
-    Log4r::Logger.send :include, ActiveRecord::SessionStore::Extension::LoggerSilencer
 
     config.enable_dependency_loading = true
     config.autoload_paths += %W(#{config.root}/lib)
@@ -231,7 +220,7 @@ MAPPING
 
   case @design
   when :bootstrap
-    gsub_file "./app/assets/javascripts/application.js", "//= require_tree .", <<JS
+    gsub_file "./app/assets/javascript/packs/application.js", "//= require_tree .", <<JS
 // require_tree .
 //= require jquery
 // require jquery_nested_form
@@ -298,7 +287,7 @@ CSS
     create_file "./app/assets/stylesheets/_custom_variables.scss", "/* Go to http://www.lavishbootstrap.com */"
 
   when :material
-    gsub_file "./app/assets/javascripts/application.js", "//= require_tree .", <<JS
+    gsub_file "./app/javascript/packs/application.js", "//= require_tree .", <<JS
 // require_tree .
 //= require jquery
 // require jquery_nested_form
